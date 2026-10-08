@@ -434,7 +434,10 @@ func initSqliteEngine() (engine *xorm.Engine, err error) {
 	// WAL mode allows concurrent readers alongside a single writer without
 	// blocking each other. busy_timeout makes concurrent writers wait (up to
 	// 5 s) instead of failing immediately with SQLITE_BUSY.
-	engine, err = xorm.NewEngine("sqlite3", path+"?_busy_timeout=5000&_journal_mode=WAL")
+	// Reserve the write lock when an explicit transaction begins: otherwise
+	// a permission read followed by a write can fail to upgrade its snapshot
+	// if a background writer commits in between, bypassing busy_timeout.
+	engine, err = xorm.NewEngine("sqlite3", path+"?_busy_timeout=5000&_journal_mode=WAL&_txlock=immediate")
 	return
 }
 

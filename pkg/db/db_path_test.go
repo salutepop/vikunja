@@ -22,6 +22,7 @@ import (
 	"path/filepath"
 	"runtime"
 	"testing"
+	"time"
 
 	"code.vikunja.io/api/pkg/config"
 	"code.vikunja.io/api/pkg/log"
@@ -33,6 +34,60 @@ import (
 func TestMain(m *testing.M) {
 	log.InitLogger()
 	os.Exit(m.Run())
+}
+
+func TestSqliteTransactionsCanUpgradeAfterConcurrentWrite(t *testing.T) {
+	config.InitDefaultConfig()
+	originalPath := config.DatabasePath.GetString()
+	config.DatabasePath.Set(filepath.Join(t.TempDir(), "transactions.db"))
+	t.Cleanup(func() { config.DatabasePath.Set(originalPath) })
+	engine, err := initSqliteEngine()
+	require.NoError(t, err)
+	defer engine.Close()
+	_, err = engine.Exec("CREATE TABLE transaction_probe (value INTEGER NOT NULL)")
+	require.NoError(t, err)
+	_, err = engine.Exec("INSERT INTO transaction_probe VALUES (0)")
+	require.NoError(t, err)
+
+	session := engine.NewSession()
+	defer session.Close()
+	require.NoError(t, session.Begin())
+	var value int
+	_, err = session.SQL("SELECT value FROM transaction_probe").Get(&value)
+	require.NoError(t, err)
+
+	started := make(chan struct{})
+	finished := make(chan error, 1)
+	go func() {
+		close(started)
+		_, writeErr := engine.Exec("UPDATE transaction_probe SET value = value + 1")
+		finished <- writeErr
+	}()
+	<-started
+	completed := false
+	select {
+	case err = <-finished:
+		completed = true
+		require.NoError(t, err)
+	case <-time.After(100 * time.Millisecond):
+		// The competing writer waits while this transaction owns the write lock.
+	}
+
+	_, err = session.Exec("UPDATE transaction_probe SET value = value + 1")
+	if !assert.NoError(t, err, "a transaction which reads before writing must not fail to upgrade") {
+		_ = session.Rollback()
+		if !completed {
+			<-finished
+		}
+		return
+	}
+	require.NoError(t, session.Commit())
+	if !completed {
+		require.NoError(t, <-finished)
+	}
+	_, err = engine.SQL("SELECT value FROM transaction_probe").Get(&value)
+	require.NoError(t, err)
+	assert.Equal(t, 2, value)
 }
 
 func Test_resolveDatabasePath(t *testing.T) {
