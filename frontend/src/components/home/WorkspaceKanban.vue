@@ -196,7 +196,7 @@ const boardProjects = computed<OverviewProject[]>(() => projectList.projectsArra
 			view: view.id,
 			title: project.title,
 			activity: {
-				key: project.updated ?? '',
+				key: (project.updated ?? '').replace('T', ' ').slice(0, 19),
 				display: props.overview.labels.app + ' ' + new Date(project.updated ?? 0).toLocaleString(),
 				evidence: props.overview.labels.app,
 			},
@@ -246,7 +246,7 @@ const entries = computed<Entry[]>(() => boardProjects.value.flatMap((project, in
 		const record = props.overview.tasks[String(task.id)]
 		const status = buckets.find(bucket => bucket.id === task.bucket_id)?.title ?? props.overview.columns[0]
 		const activity = record?.activity ?? {
-			key: task.updated ?? '',
+			key: (task.updated ?? '').replace('T', ' ').slice(0, 19),
 			display: props.overview.labels.app + ' ' + new Date(task.updated ?? 0).toLocaleString(),
 			evidence: props.overview.labels.app,
 		}
@@ -274,6 +274,7 @@ const columns = computed(() => [...new Set([
 ])])
 const visibleProjects = computed(() => boardProjects.value.filter(project =>
 	(!projectFilter.value || project.id === projectFilter.value)
+	&& (project.tasks.length > 0 || entries.value.some(entry => entry.project.id === project.id))
 	&& includesSearch([project.title, project.summary, project.conditions,
 		...project.tasks.flatMap(task => [task.title, ...task.artifacts.map(artifact => artifact.title + ' ' + artifact.path)]),
 	].join(' ')),
