@@ -379,7 +379,7 @@ async function changeStatus(event: Event, entry: Entry) {
 }
 .overview-board {
 	display: grid;
-	grid-template-columns: repeat(var(--column-count), minmax(225px, 1fr));
+	grid-template-columns: repeat(var(--column-count), minmax(200px, 1fr));
 	gap: .55rem;
 	overflow-x: auto;
 }
