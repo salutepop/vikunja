@@ -1,5 +1,12 @@
 <template>
-	<div class="content has-text-centered">
+	<WorkspaceKanban
+		v-if="workspaceOverview"
+		:overview="workspaceOverview"
+	/>
+	<div
+		v-else
+		class="content has-text-centered"
+	>
 		<h1 v-if="salutation">
 			{{ salutation }}
 		</h1>
@@ -50,6 +57,8 @@
 import {ref, computed} from 'vue'
 import {useRoute, useRouter} from 'vue-router'
 
+import WorkspaceKanban from '@/components/home/WorkspaceKanban.vue'
+
 import Message from '@/components/misc/Message.vue'
 import ShowTasks from '@/views/tasks/ShowTasks.vue'
 import ProjectCardGrid from '@/components/project/partials/ProjectCardGrid.vue'
@@ -63,6 +72,8 @@ import {useDaytimeSalutation} from '@/composables/useDaytimeSalutation'
 
 import {useProjects} from '@/composables/useProjects'
 import {useAuthStore} from '@/stores/auth'
+
+const workspaceOverview = window.EXTERNAL_WORKSPACE_OVERVIEW
 
 const salutation = useDaytimeSalutation()
 

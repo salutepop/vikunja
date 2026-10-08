@@ -71,6 +71,12 @@
 				{{ projectTitle }}
 			</span>
 
+			<OverviewTaskRecord
+				v-if="externalOverview && externalRecord"
+				:record="externalRecord"
+				:labels="externalOverview.labels"
+			/>
+
 			<ProgressBar
 				v-if="task.percent_done > 0"
 				class="task-progress"
@@ -127,6 +133,8 @@ import {useRouter} from 'vue-router'
 
 import {useGlobalNow} from '@/composables/useGlobalNow'
 
+import OverviewTaskRecord from '@/components/home/OverviewTaskRecord.vue'
+
 import PriorityLabel from '@/components/tasks/partials/PriorityLabel.vue'
 import ProgressBar from '@/components/misc/ProgressBar.vue'
 import Done from '@/components/misc/Done.vue'
@@ -158,6 +166,9 @@ const props = defineProps<{
 const emit = defineEmits<{
 	'taskCompletedRecurring': [task: ITask]
 }>()
+
+const externalOverview = window.EXTERNAL_WORKSPACE_OVERVIEW
+const externalRecord = computed(() => externalOverview?.tasks[String(props.task.id)])
 
 const router = useRouter()
 const updateTask = useUpdateTaskMutation()
