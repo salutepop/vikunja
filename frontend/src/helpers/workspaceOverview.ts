@@ -48,6 +48,13 @@ export type OverviewProject = {
 }
 
 export type WorkspaceOverview = {
+	brand?: {
+		name: string,
+		subtitle?: string,
+		source_url?: string,
+		source_label?: string,
+	},
+	column_colors?: Record<string, string>,
 	personal_mode?: boolean,
 	default_orientation?: 'vertical' | 'horizontal',
 	title: string,
@@ -73,4 +80,8 @@ export function overviewUrl(value: string): string | undefined {
 	} catch {
 		return undefined
 	}
+}
+
+export function getApplicationName(): string {
+	return window.EXTERNAL_WORKSPACE_OVERVIEW?.brand?.name || 'Vikunja'
 }

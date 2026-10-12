@@ -103,6 +103,7 @@ const showAuthLayout = computed(() => authStore.authUser && typeof route.name ==
 const showNoAuthRoute = computed(() => typeof route.name === 'string' && AUTH_ROUTE_NAMES.has(route.name))
 
 useBodyClass('is-touch', isTouchDevice())
+useBodyClass('personal-workspace', Boolean(window.EXTERNAL_WORKSPACE_OVERVIEW?.personal_mode))
 const keyboardShortcutsActive = computed(() => baseStore.keyboardShortcutsActive)
 
 const router = useRouter()
@@ -136,3 +137,5 @@ useTimeTrackingFavicon()
 <style src="@/styles/tailwind.css" />
 
 <style lang="scss" src="@/styles/global.scss" />
+
+<style lang="scss" src="@/styles/workspace.scss" />

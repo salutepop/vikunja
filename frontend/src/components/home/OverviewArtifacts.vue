@@ -53,48 +53,59 @@ defineProps<{
 <style scoped lang="scss">
 .overview-artifacts {
 	list-style: none;
-	margin: .35rem 0 0;
+	margin: .45rem 0 0;
 	padding: 0;
 	max-block-size: 10.25rem;
 	overflow-y: auto;
 	overscroll-behavior: contain;
 	scrollbar-gutter: stable;
-
 	li {
-		padding: .35rem 0;
-		border-block-end: 1px solid var(--grey-200);
+		padding: .4rem .55rem;
+		border: 1px solid #e8edf5;
+		border-radius: 7px;
+		background: #f8faff;
 		min-block-size: 3.4rem;
+		transition: border-color .15s, background .15s;
+		&:hover {
+			border-color: #cdd7ef;
+			background: #f1f5fd;
+		}
 	}
-
 	a {
 		display: -webkit-box;
 		-webkit-line-clamp: 2;
 		-webkit-box-orient: vertical;
 		overflow: hidden;
-		line-height: 1.35;
-		font-size: .8rem;
-		font-weight: 500;
-		color: var(--primary);
-		text-decoration: underline;
+		line-height: 1.4;
+		font-size: .78rem;
+		font-weight: 550;
+		color: #53669c;
+		text-decoration: none;
+		&:hover {
+			color: #344d97;
+			text-decoration: underline;
+		}
 	}
 }
-
 .artifact-time {
 	display: flex;
 	flex-wrap: wrap;
-	gap: .15rem .5rem;
-	font-size: .68rem;
-	line-height: 1.4;
-	color: var(--grey-700);
+	gap: .1rem .45rem;
+	margin-block-start: .1rem;
+	font-size: .64rem;
+	font-weight: 400;
+	line-height: 1.45;
+	font-variant-numeric: tabular-nums;
+	color: #8693a7;
 }
 @container (min-width: 550px) {
 	.overview-artifacts {
 		display: grid;
 		grid-template-columns: repeat(3, minmax(0, 1fr));
-		gap: 0 1rem;
-		max-block-size: 5rem;
+		gap: .35rem .5rem;
+		max-block-size: 4.4rem;
 		li {
-			min-block-size: 4.5rem;
+			min-block-size: 4.3rem;
 		}
 	}
 }

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import {getApplicationName} from '@/helpers/workspaceOverview'
 import { computed } from 'vue'
 import { useNow } from '@vueuse/core'
 import { useAuthStore } from '@/stores/auth'
@@ -39,13 +40,13 @@ const CustomLogo = computed(() => {
 	<div>
 		<Logo
 			v-if="!CustomLogo"
-			alt="Vikunja"
+			:alt="getApplicationName()"
 			class="logo"
 		/>
 		<img
 			v-else
 			:src="CustomLogo"
-			alt="Vikunja"
+			:alt="getApplicationName()"
 			class="logo"
 		>
 	</div>

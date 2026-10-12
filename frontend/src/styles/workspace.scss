@@ -1,0 +1,58 @@
+@font-face {
+	font-family: 'Pretendard Variable';
+	src: url('@/assets/fonts/PretendardVariable.woff2') format('woff2');
+	font-weight: 45 920;
+	font-style: normal;
+	font-display: swap;
+}
+
+body.personal-workspace {
+	--workspace-ink: #223047;
+	--workspace-muted: #738096;
+	--workspace-border: #e5e9f0;
+	--workspace-accent: #5265cc;
+	--workspace-surface: #ffffff;
+	--workspace-canvas: #f5f7fb;
+	background: var(--workspace-canvas);
+	color: var(--workspace-ink);
+	font-family: 'Pretendard Variable', system-ui, sans-serif;
+	-webkit-font-smoothing: antialiased;
+
+	input, button, textarea, select, h1, h2, h3, .title {
+		font-family: 'Pretendard Variable', system-ui, sans-serif;
+	}
+
+	.task-view-container {
+		color: var(--workspace-ink);
+		.heading h1 {
+			font-size: 1.5rem;
+			font-weight: 650;
+			letter-spacing: -.025em;
+		}
+		.personal-completion {
+			background: #eef1fc;
+			color: #4355b1;
+			border: 1px solid #dce2fa;
+			border-radius: 8px;
+			font-size: .8rem;
+			padding: .45rem .7rem;
+		}
+		.source-details summary {
+			color: var(--workspace-muted);
+			padding-block: .3rem;
+		}
+		.comments-heading {
+			font-size: 1rem;
+			font-weight: 650;
+			svg {
+				display: none;
+			}
+		}
+		.comments-container .tiptap__editor-is-edit-enabled {
+			min-block-size: 5rem;
+			background: #f8faff;
+			border: 1px solid var(--workspace-border);
+			border-radius: 10px;
+		}
+	}
+}

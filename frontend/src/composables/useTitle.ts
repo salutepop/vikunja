@@ -1,3 +1,4 @@
+import {getApplicationName} from '@/helpers/workspaceOverview'
 import {computed, toValue, type MaybeRef, type MaybeRefOrGetter} from 'vue'
 
 import {useTitle as useTitleVueUse, type UseTitleOptions, type ReadonlyRefOrGetter} from '@vueuse/core'
@@ -13,8 +14,8 @@ export function useTitle(
 
 	const completeTitle = computed(() =>
 		(typeof pageTitle.value === 'undefined' || pageTitle.value === '')
-			? 'Vikunja'
-			: `${pageTitle.value} | Vikunja`,
+			? getApplicationName()
+			: `${pageTitle.value} | ${getApplicationName()}`,
 	)
 
 	return useTitleVueUse(completeTitle, options)

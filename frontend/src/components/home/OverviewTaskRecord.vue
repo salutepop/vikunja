@@ -30,7 +30,8 @@ defineProps<{
 <style scoped lang="scss">
 .record-summary {
 	margin: .25rem 0 .45rem;
-	font-size: .85rem;
-	line-height: 1.55;
+	font-size: .84rem;
+	line-height: 1.6;
+	color: #637086;
 }
 </style>

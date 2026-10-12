@@ -1,10 +1,10 @@
 <template>
 	<BaseButton
 		class="menu-bottom-link"
-		:href="computedUrl"
+		:href="workspaceBrand?.source_url || computedUrl"
 		target="_blank"
 	>
-		{{ $t('misc.poweredBy') }}
+		{{ workspaceBrand?.source_label ?? $t('misc.poweredBy') }}
 	</BaseButton>
 </template>
 
@@ -16,6 +16,8 @@ import {POWERED_BY as poweredByUrl} from '@/urls'
 const props = defineProps<{
 	utmMedium: string;
 }>()
+
+const workspaceBrand = window.EXTERNAL_WORKSPACE_OVERVIEW?.brand
 
 const computedUrl = computed(() => `${poweredByUrl}&utm_medium=${props.utmMedium}`)
 </script>

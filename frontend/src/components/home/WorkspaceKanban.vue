@@ -1,7 +1,27 @@
 <template>
 	<section class="workspace-overview">
 		<header class="overview-toolbar">
-			<h1>{{ overview.title }}</h1>
+			<div class="workspace-brand">
+				<svg
+					class="brand-symbol"
+					viewBox="0 0 32 32"
+					aria-hidden="true"
+				>
+					<rect
+						width="32"
+						height="32"
+						rx="9"
+						fill="currentColor"
+					/>
+					<path d="M9 9h8a4 4 0 0 1 0 8H9zm0 8h9a3 3 0 0 1 0 6H9V9" />
+				</svg>
+				<div>
+					<h1>{{ overview.brand?.name ?? overview.title }}</h1>
+					<p v-if="overview.brand?.subtitle">
+						{{ overview.brand.subtitle }}
+					</p>
+				</div>
+			</div>
 			<div class="overview-controls">
 				<button
 					v-for="mode in ['board', 'projects'] as const"
@@ -48,6 +68,7 @@
 				v-for="column in columns"
 				:key="column"
 				class="overview-column"
+				:style="{'--status-accent': overview.column_colors?.[column] ?? '#5265cc'}"
 				:data-status="column"
 				@dragover="allowDrop($event, column)"
 				@drop.prevent="drop(column)"
@@ -97,7 +118,10 @@
 							:labels="overview.labels"
 						/>
 					</article>
-					<p v-if="!entriesFor(column).length">
+					<p
+						v-if="!entriesFor(column).length"
+						class="empty-state"
+					>
 						{{ overview.labels.empty }}
 					</p>
 				</div>
@@ -154,7 +178,7 @@
 </template>
 
 <script setup lang="ts">
-import {computed, ref, watch} from 'vue'
+import {computed, ref} from 'vue'
 import {useMutation, useQueries} from '@tanstack/vue-query'
 import {allTasksQuery, type TaskResponse} from '@/client/queries/tasks'
 import {useProjects} from '@/composables/useProjects'
@@ -175,7 +199,7 @@ import {
 const props = defineProps<{overview: WorkspaceOverview}>()
 const display = ref<'board' | 'projects'>('board')
 const orientation = ref<'vertical' | 'horizontal'>('vertical')
-watch(() => props.overview.default_orientation, value => {orientation.value = value ?? 'vertical'}, {immediate: true})
+
 const selectedTask = ref<number | null>(null)
 const router = useRouter()
 const projectFilter = ref(0)
@@ -346,202 +370,302 @@ async function moveSelected(status: string) {
 
 <style scoped lang="scss">
 .workspace-overview {
+	font-family: 'Pretendard Variable', system-ui, sans-serif;
+	color: var(--workspace-ink, #223047);
 	text-align: start;
+	max-inline-size: 1680px;
+	margin-inline: auto;
 }
 .overview-toolbar {
 	display: flex;
 	flex-wrap: wrap;
 	align-items: center;
 	justify-content: space-between;
-	gap: .5rem;
+	gap: 1rem;
+	padding-block: .3rem 1.1rem;
+}
+.workspace-brand {
+	display: flex;
+	align-items: center;
+	gap: .7rem;
 	h1 {
-		font-size: 1.15rem;
+		font-size: 1.55rem;
+		font-weight: 750;
+		letter-spacing: -.04em;
+		line-height: 1.05;
 		margin: 0;
+	}
+	p {
+		margin: .25rem 0 0;
+		font-size: .7rem;
+		color: var(--workspace-muted);
+		letter-spacing: .03em;
+	}
+}
+.brand-symbol {
+	inline-size: 36px;
+	block-size: 36px;
+	color: #223047;
+	path {
+		stroke: #f0f4ff;
+		stroke-width: 1.8;
+		stroke-linejoin: round;
+		fill: none;
 	}
 }
 .overview-controls {
 	display: flex;
 	flex-wrap: wrap;
+	align-items: center;
 	gap: .35rem;
-	input, select, button {
-		border: 1px solid var(--grey-300);
-		border-radius: .25rem;
-		background: var(--white);
-		color: var(--text);
+	input, button, a {
+		border: 1px solid var(--workspace-border);
+		border-radius: 9px;
+		background: #ffffff;
+		color: #637086;
 		font-size: .8rem;
-		padding: .35rem .5rem;
+		font-weight: 550;
+		padding: .55rem .8rem;
+		line-height: 1;
+		block-size: 35px;
+		text-decoration: none;
+		transition: background .15s, border-color .15s, color .15s;
+	}
+	button, a {
+		cursor: pointer;
+		&:hover {
+			background: #f0f3fb;
+			border-color: #cbd4e7;
+			color: #223047;
+		}
+		&:focus-visible {
+			outline: 2px solid #5265cc;
+			outline-offset: 2px;
+		}
 	}
 	input {
-		inline-size: 15rem;
+		inline-size: 16rem;
+		background: #edf1f7;
+		border-color: transparent;
+		&:focus {
+			outline: 2px solid #c9d2f9;
+			background: #ffffff;
+		}
 	}
 	button[aria-pressed='true'] {
-		background: var(--primary);
-		color: var(--primary-invert);
-	}
-}
-.overview-note {
-	font-size: .75rem;
-	color: var(--grey-700);
-	margin: .5rem 0;
-	time {
-		margin-inline-start: .6rem;
+		background: #e9edfb;
+		color: #4355b1;
+		border-color: #d4dcf7;
 	}
 }
 .overview-board {
 	display: grid;
-	grid-template-columns: repeat(var(--column-count), minmax(200px, 1fr));
-	gap: .55rem;
+	grid-template-columns: repeat(var(--column-count), minmax(230px, 1fr));
+	gap: .8rem;
 	overflow-x: auto;
 }
 .overview-column {
-	background: var(--grey-100);
-	border: 1px solid var(--grey-300);
-	border-radius: .25rem;
 	min-inline-size: 0;
+	border-radius: 13px;
+	background: #eef2f8;
+	border: 1px solid #e6ebf3;
 	> h2 {
-		font-size: .9rem;
 		margin: 0;
-		padding: .5rem;
-		border-block-end: 2px solid var(--primary);
+		padding: .75rem;
+		font-size: .83rem;
+		font-weight: 650;
 	}
-	h2 span {
-		font-size: .75rem;
-		color: var(--grey-600);
-		margin-inline-start: .3rem;
+}
+.status-target {
+	display: inline-flex;
+	align-items: center;
+	gap: .4rem;
+	color: var(--workspace-ink);
+	border: 0;
+	background: transparent;
+	padding: 0;
+	font: inherit;
+	cursor: pointer;
+	&::before {
+		content: '';
+		inline-size: 6px;
+		block-size: 6px;
+		border-radius: 50%;
+		background: var(--status-accent);
+	}
+	span {
+		font-size: .7rem;
+		font-weight: 600;
+		background: #ffffff;
+		color: var(--workspace-muted);
+		border-radius: 5px;
+		padding: .12rem .35rem;
+	}
+	&:focus-visible {
+		outline: 2px solid var(--status-accent);
+		outline-offset: 4px;
 	}
 }
 .column-scroll {
-	padding: .4rem;
+	padding: .25rem .55rem .55rem;
 	max-block-size: calc(100vh - 8rem);
 	overflow-y: auto;
 	overscroll-behavior: contain;
 }
 .overview-task {
 	margin-block-end: .55rem;
-	border: 1px solid var(--grey-300);
-	border-radius: .25rem;
-	background: var(--white);
+	padding: .65rem .95rem;
+	border: 1px solid #e5eaf2;
+	border-radius: 10px;
+	background: #ffffff;
+	box-shadow: 0 1px 3px #1b2b4810;
 	container-type: inline-size;
-	padding: .6rem .8rem;
 	cursor: grab;
+	transition: border-color .15s, box-shadow .15s;
+	&:hover {
+		border-color: #cbd5e7;
+		box-shadow: 0 3px 12px #1b2b4812;
+	}
 	h3 {
-		font-size: 1rem;
+		font-size: .95rem;
 		line-height: 1.45;
-		margin: .25rem 0;
-	}
-	&.is-selected {
-		outline: 2px solid var(--primary);
-	}
-}
-.status-target {
-	border: 0;
-	padding: 0;
-	background: transparent;
-	font: inherit;
-	color: inherit;
-	cursor: pointer;
-}
-.overview-board.is-vertical {
-	grid-template-columns: 1fr;
-	.overview-column {
-		display: grid;
-		grid-template-columns: 105px minmax(0, 1fr);
-		> h2 {
-			border-block-end: 0;
-			border-inline-end: 2px solid var(--primary);
+		font-weight: 650;
+		letter-spacing: -.015em;
+		margin: .4rem 0 .15rem;
+		a {
+			color: #223047;
+			text-decoration: none;
+			&:hover {
+				color: #5265cc;
+			}
 		}
 	}
-	.column-scroll {
-		max-block-size: none;
+	&.is-selected {
+		border-color: #5265cc;
+		box-shadow: 0 0 0 2px #e2e7ff;
+	}
+	&:last-child {
+		margin-block-end: 0;
 	}
 }
 .task-controls {
 	display: flex;
 	align-items: center;
-	gap: .25rem;
-	padding: .25rem .35rem;
-	border-block-end: 1px solid var(--grey-200);
-	font-size: .65rem;
-	color: var(--grey-700);
+	gap: .5rem;
+	font-size: .68rem;
+	color: #8090a5;
+	.task-project {
+		font-weight: 550;
+		color: #637690;
+		background: #f2f5fa;
+		border-radius: 5px;
+		padding: .16rem .4rem;
+	}
 	time {
 		margin-inline-start: auto;
+		font-variant-numeric: tabular-nums;
 	}
 	button {
 		border: 0;
 		background: transparent;
-		color: var(--grey-700);
 		font: inherit;
+		color: #8090a5;
+		padding: .2rem .35rem;
+		border-radius: 5px;
+		cursor: pointer;
+		&:hover, &[aria-pressed='true'] {
+			background: #edf1fc;
+			color: #4355b1;
+		}
 	}
-	select {
-		font-size: .68rem;
-		max-inline-size: 6rem;
-		border: 1px solid var(--grey-300);
-		background: var(--white);
-		color: var(--text);
+}
+.overview-board.is-vertical {
+	grid-template-columns: 1fr;
+	gap: .65rem;
+	.overview-column {
+		display: grid;
+		grid-template-columns: 120px minmax(0, 1fr);
+		> h2 {
+			padding: .9rem .85rem;
+		}
+	}
+	.column-scroll {
+		padding: .5rem;
+		max-block-size: none;
 	}
 }
-.drag-handle {
-	border: 0;
-	background: transparent;
-	color: var(--grey-600);
-	cursor: grab;
-	font-size: 1.2rem;
-	padding: 0 .15rem;
-}
-.record-summary, .record-conditions {
-	display: -webkit-box;
-	-webkit-box-orient: vertical;
-	overflow: hidden;
-	line-height: 1.45;
-	margin: .4rem 0;
-	font-size: .8rem;
-}
-.record-summary {
-	-webkit-line-clamp: 4;
-}
-.record-conditions {
-	-webkit-line-clamp: 2;
-	font-size: .72rem;
-	color: var(--grey-700);
-}
-.artifact-heading, .empty-artifacts {
-	font-size: .72rem;
-	margin: .35rem 0;
-	color: var(--grey-600);
+.empty-state {
+	font-size: .75rem;
+	color: #8a97aa;
+	padding: .3rem;
+	margin: 0;
 }
 .overview-project {
 	display: grid;
 	grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-	gap: 1rem;
-	padding: .65rem;
-	background: var(--white);
-	border-block-end: 1px solid var(--grey-300);
+	gap: 1.2rem;
+	padding: 1rem 1.2rem;
+	margin-block-end: .7rem;
+	background: #ffffff;
+	border: 1px solid #e5eaf2;
+	border-radius: 12px;
 	h2 {
 		font-size: 1rem;
+		font-weight: 650;
 		margin: 0;
+		a {
+			color: #223047;
+		}
 	}
 	small {
 		font-size: .7rem;
-		font-weight: normal;
+		font-weight: 400;
 		margin-inline-start: .6rem;
-		color: var(--grey-600);
+		color: #8a97aa;
 	}
+}
+.record-summary, .record-conditions, .record-next {
+	font-size: .8rem;
+	line-height: 1.6;
+	margin: .35rem 0;
+	color: #637086;
+}
+.record-summary {
+	display: -webkit-box;
+	-webkit-line-clamp: 3;
+	-webkit-box-orient: vertical;
+	overflow: hidden;
 }
 .project-artifact-scroll {
 	max-block-size: 13rem;
 	overflow-y: auto;
 	h3 {
 		font-size: .75rem;
+		font-weight: 550;
 		margin: .25rem 0;
 	}
-}
-.record-next {
-	font-size: .75rem;
-	margin: .35rem 0;
 }
 @media (width <= 850px) {
 	.overview-project {
 		grid-template-columns: 1fr;
+	}
+}
+@media (width <= 600px) {
+	.overview-controls {
+		input {
+			inline-size: 100%;
+		}
+	}
+	.overview-board.is-vertical {
+		.overview-column {
+			grid-template-columns: 1fr;
+			> h2 {
+				padding: .6rem .75rem;
+			}
+		}
+	}
+	.task-controls time {
+		font-size: .6rem;
 	}
 }
 </style>
