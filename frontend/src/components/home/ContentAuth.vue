@@ -120,7 +120,7 @@ function showKeyboardShortcuts() {
 }
 
 const compactWorkspace = computed(() => Boolean(window.EXTERNAL_WORKSPACE_OVERVIEW?.personal_mode)
-	&& routeWithModal.value.name === 'home')
+	&& (routeWithModal.value.name === 'home' || routeWithModal.value.name === 'task.detail'))
 
 const route = useRoute()
 const router = useRouter()

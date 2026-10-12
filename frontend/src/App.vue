@@ -92,7 +92,7 @@ if (isQuickAddMode) {
 const route = useRoute()
 
 const compactWorkspace = computed(() => Boolean(window.EXTERNAL_WORKSPACE_OVERVIEW?.personal_mode)
-	&& (route.name === 'home' || (route.name === 'task.detail' && window.history.state?.backdropView === '/')))
+	&& (route.name === 'home' || route.name === 'task.detail'))
 
 const showAuthLayout = computed(() => authStore.authUser && typeof route.name === 'string' && !AUTH_ROUTE_NAMES.has(route.name))
 

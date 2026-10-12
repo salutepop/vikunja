@@ -16,10 +16,10 @@
 			<BaseButton
 				v-if="!isModal"
 				class="back-button mbs-2"
-				@click="lastProject ? router.back() : router.push(projectRoute)"
+				@click="personalMode ? router.push({name: 'home'}) : lastProject ? router.back() : router.push(projectRoute)"
 			>
 				<Icon icon="arrow-left" />
-				{{ $t('task.detail.back') }}
+				{{ personalMode ? externalOverview!.labels.board : $t('task.detail.back') }}
 			</BaseButton>
 			<Heading
 				ref="heading"
@@ -1293,7 +1293,8 @@ function setRelatedTasksActive() {
 
 <style lang="scss" scoped>
 .is-personal {
-	:deep(.heading .task-properties > :not(.close)) {
+	:deep(.heading .task-properties > :not(.close)),
+	:deep(.heading .task-id) {
 		display: none;
 	}
 	.detail-content {

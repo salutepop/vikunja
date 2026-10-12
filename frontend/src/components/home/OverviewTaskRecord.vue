@@ -33,11 +33,4 @@ defineProps<{
 	font-size: .85rem;
 	line-height: 1.55;
 }
-@container (min-width: 550px) {
-	.task-record {
-		display: grid;
-		grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
-		gap: 1.2rem;
-	}
-}
 </style>

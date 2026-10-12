@@ -87,4 +87,15 @@ defineProps<{
 	line-height: 1.4;
 	color: var(--grey-700);
 }
+@container (min-width: 550px) {
+	.overview-artifacts {
+		display: grid;
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+		gap: 0 1rem;
+		max-block-size: 5rem;
+		li {
+			min-block-size: 4.5rem;
+		}
+	}
+}
 </style>
