@@ -1,30 +1,19 @@
 <template>
 	<div class="task-record">
-		<p
-			class="record-summary"
-			:title="record.summary"
-		>
-			{{ record.summary }}
-		</p>
-		<p
-			class="record-conditions"
-			:title="record.conditions"
-		>
-			<strong>{{ labels.conditions }}</strong> {{ record.conditions }}
-		</p>
-		<div class="artifact-heading">
-			{{ labels.artifacts }} <span>{{ record.artifacts.length }}</span>
+		<div class="record-copy">
+			<p class="record-summary">
+				{{ record.outcome ?? record.summary }}
+			</p>
 		</div>
-		<OverviewArtifacts
-			:artifacts="record.artifacts"
-			:labels="labels"
-		/>
-		<p
-			v-if="!record.artifacts.length"
-			class="empty-artifacts"
+		<div
+			v-if="record.artifacts.length"
+			class="record-reports"
 		>
-			{{ labels.no_artifacts }}
-		</p>
+			<OverviewArtifacts
+				:artifacts="record.artifacts"
+				:labels="labels"
+			/>
+		</div>
 	</div>
 </template>
 
@@ -39,30 +28,16 @@ defineProps<{
 </script>
 
 <style scoped lang="scss">
-.record-summary,
-.record-conditions {
-	display: -webkit-box;
-	-webkit-box-orient: vertical;
-	overflow: hidden;
-	line-height: 1.45;
-	margin: .4rem 0;
-	font-size: .8rem;
-}
-
 .record-summary {
-	-webkit-line-clamp: 4;
+	margin: .25rem 0 .45rem;
+	font-size: .85rem;
+	line-height: 1.55;
 }
-
-.record-conditions {
-	-webkit-line-clamp: 2;
-	font-size: .72rem;
-	color: var(--grey-700);
-}
-
-.artifact-heading,
-.empty-artifacts {
-	font-size: .72rem;
-	margin: .35rem 0;
-	color: var(--grey-600);
+@container (min-width: 550px) {
+	.task-record {
+		display: grid;
+		grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+		gap: 1.2rem;
+	}
 }
 </style>

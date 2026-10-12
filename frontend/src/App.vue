@@ -17,7 +17,7 @@
 				{{ $t('misc.skipToContent') }}
 			</a>
 			<template v-if="showAuthLayout">
-				<AppHeader />
+				<AppHeader v-if="!compactWorkspace" />
 				<ContentAuth />
 			</template>
 			<ContentLinkShare v-else-if="authStore.authLinkShare" />
@@ -90,6 +90,9 @@ if (isQuickAddMode) {
 }
 
 const route = useRoute()
+
+const compactWorkspace = computed(() => Boolean(window.EXTERNAL_WORKSPACE_OVERVIEW?.personal_mode)
+	&& (route.name === 'home' || (route.name === 'task.detail' && window.history.state?.backdropView === '/')))
 
 const showAuthLayout = computed(() => authStore.authUser && typeof route.name === 'string' && !AUTH_ROUTE_NAMES.has(route.name))
 

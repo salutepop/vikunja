@@ -23,6 +23,8 @@ export type OverviewArtifact = {
 }
 
 export type OverviewRecord = {
+	headline?: string,
+	outcome?: string,
 	activity: OverviewActivity,
 	summary: string,
 	conditions: string,
@@ -46,6 +48,8 @@ export type OverviewProject = {
 }
 
 export type WorkspaceOverview = {
+	personal_mode?: boolean,
+	default_orientation?: 'vertical' | 'horizontal',
 	title: string,
 	note: string,
 	checked_at: string,

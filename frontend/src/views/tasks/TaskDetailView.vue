@@ -5,6 +5,7 @@
 		:class="{
 			'is-loading': taskBusy || !visible,
 			'is-modal': isModal,
+			'is-personal': personalMode,
 		}"
 	>
 		<!-- Removing everything until the task is loaded to prevent empty initialization of other components -->
@@ -67,7 +68,7 @@
 			<div class="columns mbs-2">
 				<!-- Content -->
 				<div
-					:class="{'is-two-thirds': canWrite}"
+					:class="{'is-two-thirds': canWrite && !personalMode}"
 					class="column detail-content"
 				>
 					<div class="columns details">
@@ -339,16 +340,40 @@
 						/>
 					</div>
 
-					<!-- Description -->
-					<div class="details content description">
+					<button
+						v-if="personalMode && canWrite"
+						class="personal-completion"
+						:aria-disabled="taskBusy"
+						@click="!taskBusy && toggleTaskDone()"
+					>
+						{{ task.done ? $t('task.detail.undone') : $t('task.detail.done') }}
+					</button>
+					<template v-if="personalMode && externalRecord">
+						<OverviewTaskRecord
+							:record="externalRecord"
+							:labels="externalOverview!.labels"
+						/>
+						<details class="source-details">
+							<summary>{{ externalOverview!.labels.source_detail }}</summary>
+							<Description
+								:model-value="task"
+								:can-write="canWrite"
+							/>
+						</details>
+					</template>
+					<div
+						v-else
+						class="details content description"
+					>
 						<Description
 							:model-value="task"
 							:can-write="canWrite"
 						/>
 					</div>
-					
+
 					<!-- Reactions -->
 					<Reactions
+						v-if="!personalMode"
 						:model-value="task.reactions"
 						entity-kind="tasks"
 						:entity-id="task.id"
@@ -436,7 +461,7 @@
 				
 				<!-- Task Actions -->
 				<div
-					v-if="canWrite || isModal"
+					v-if="!personalMode && (canWrite || isModal)"
 					class="column is-one-third action-buttons d-print-none"
 				>
 					<template v-if="canWrite">
@@ -617,7 +642,7 @@
 		</div>
 
 		<BaseButton
-			v-if="showScrollToCommentsButton"
+			v-if="showScrollToCommentsButton && !personalMode"
 			v-tooltip="$t('task.detail.scrollToBottom')"
 			class="scroll-to-comments-button d-print-none"
 			:aria-label="$t('task.detail.scrollToBottom')"
@@ -687,6 +712,8 @@ import PrioritySelect from '@/components/tasks/partials/PrioritySelect.vue'
 import RelatedTasks from '@/components/tasks/partials/RelatedTasks.vue'
 import Reminders from '@/components/tasks/partials/Reminders.vue'
 import RepeatAfter from '@/components/tasks/partials/RepeatAfter.vue'
+import OverviewTaskRecord from '@/components/home/OverviewTaskRecord.vue'
+
 import TaskSubscription from '@/components/misc/Subscription.vue'
 import CustomTransition from '@/components/misc/CustomTransition.vue'
 import AssigneeList from '@/components/tasks/partials/AssigneeList.vue'
@@ -749,6 +776,10 @@ const taskMutating = computed(() => [
 	markTaskRead,
 ].some(mutation => mutation.isPending.value))
 const configStore = useConfigStore()
+const externalOverview = window.EXTERNAL_WORKSPACE_OVERVIEW
+const personalMode = Boolean(externalOverview?.personal_mode)
+const externalRecord = computed(() => externalOverview?.tasks[String(task.value.id)])
+
 const authStore = useAuthStore()
 const timeTrackingEnabled = computed(() => configStore.isProFeatureEnabled(PRO_FEATURE.TIME_TRACKING)
 	&& !authStore.isLinkShareAuth)
@@ -1261,6 +1292,31 @@ function setRelatedTasksActive() {
 </script>
 
 <style lang="scss" scoped>
+.is-personal {
+	:deep(.heading .task-properties > :not(.close)) {
+		display: none;
+	}
+	.detail-content {
+		inline-size: 100%;
+		container-type: inline-size;
+	}
+	.personal-completion {
+		background: var(--white);
+		border: 1px solid var(--grey-300);
+		padding: .3rem .6rem;
+		margin-block-end: .5rem;
+		font: inherit;
+		color: var(--text);
+	}
+	.source-details {
+		font-size: .85rem;
+		margin-block: .8rem;
+		summary {
+			cursor: pointer;
+		}
+	}
+}
+
 .task-view-container {
 	// simulate sass lighten($primary, 30) by increasing lightness 30% to 73%
 	--primary-light: hsla(var(--primary-h), var(--primary-s), 73%, var(--primary-a));

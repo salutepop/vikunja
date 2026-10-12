@@ -1,7 +1,10 @@
 <template>
-	<div class="content-auth">
+	<div
+		class="content-auth"
+		:class="{'compact-workspace': compactWorkspace}"
+	>
 		<BaseButton
-			v-show="menuActive"
+			v-show="menuActive && !compactWorkspace"
 			:aria-label="$t('navigation.closeSidebar')"
 			class="menu-hide-button d-print-none"
 			@click="baseStore.setMenuActive(false)"
@@ -21,19 +24,22 @@
 					'filter': backgroundBrightness ? `brightness(${backgroundBrightness}%)` : undefined
 				}"
 			/>
-			<Navigation class="d-print-none" />
+			<Navigation
+				v-if="!compactWorkspace"
+				class="d-print-none"
+			/>
 			<main
 				id="main-content"
 				tabindex="-1"
 				class="app-content"
 				:class="[
-					{ 'is-menu-enabled': menuActive },
+					{ 'is-menu-enabled': menuActive && !compactWorkspace },
 					$route.name,
 				]"
 				:style="{'--sidebar-width': sidebarWidthStyle}"
 			>
 				<BaseButton
-					v-show="menuActive"
+					v-show="menuActive && !compactWorkspace"
 					:aria-label="$t('navigation.closeSidebar')"
 					class="mobile-overlay d-print-none"
 					@click="baseStore.setMenuActive(false)"
@@ -64,6 +70,7 @@
 				</Modal>
 
 				<BaseButton
+					v-if="!compactWorkspace"
 					v-shortcut="SHORTCUTS.showKeyboardShortcuts"
 					class="keyboard-shortcuts-button d-print-none"
 					@click="showKeyboardShortcuts()"
@@ -112,6 +119,9 @@ function showKeyboardShortcuts() {
 	baseStore.setKeyboardShortcutsActive(true)
 }
 
+const compactWorkspace = computed(() => Boolean(window.EXTERNAL_WORKSPACE_OVERVIEW?.personal_mode)
+	&& routeWithModal.value.name === 'home')
+
 const route = useRoute()
 const router = useRouter()
 
@@ -159,6 +169,18 @@ onBeforeUnmount(() => {
 </script>
 
 <style lang="scss" scoped>
+.compact-workspace {
+	.app-container {
+		padding-block-start: 0;
+		min-block-size: 100vh;
+	}
+	.app-content {
+		padding: .8rem 1rem;
+		margin-inline-start: 0;
+		transition: none;
+	}
+}
+
 .menu-hide-button {
 	position: fixed;
 	inset-block-start: 0.5rem;

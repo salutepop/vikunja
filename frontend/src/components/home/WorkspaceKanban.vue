@@ -11,36 +11,23 @@
 				>
 					{{ overview.labels[mode] }}
 				</button>
-				<select
-					v-model="projectFilter"
-					:aria-label="overview.labels.projects"
-				>
-					<option :value="0">
-						{{ overview.labels.all }}
-					</option>
-					<option
-						v-for="project in boardProjects"
-						:key="project.id"
-						:value="project.id"
-					>
-						{{ project.title }}
-					</option>
-				</select>
 				<input
 					v-model="search"
 					type="search"
 					:placeholder="overview.labels.search"
 					:aria-label="overview.labels.search"
 				>
+				<button @click="orientation = orientation === 'vertical' ? 'horizontal' : 'vertical'">
+					{{ orientation === 'vertical' ? overview.labels.horizontal : overview.labels.vertical }}
+				</button>
+				<RouterLink to="/projects">
+					{{ overview.labels.menu }}
+				</RouterLink>
 				<button @click="reload">
 					{{ overview.labels.refresh }}
 				</button>
 			</div>
 		</header>
-		<p class="overview-note">
-			{{ overview.note }}
-			<time :datetime="overview.checked_at">{{ overview.labels.checked }} {{ checkedAt }}</time>
-		</p>
 		<p
 			v-if="hasError"
 			role="alert"
@@ -54,6 +41,7 @@
 		<div
 			v-if="display === 'board' && !isLoading"
 			class="overview-board"
+			:class="{'is-vertical': orientation === 'vertical'}"
 			:style="{'--column-count': columns.length}"
 		>
 			<section
@@ -64,44 +52,49 @@
 				@dragover="allowDrop($event, column)"
 				@drop.prevent="drop(column)"
 			>
-				<h2>{{ column }} <span>{{ entriesFor(column).length }}</span></h2>
+				<h2>
+					<button
+						class="status-target"
+						:title="overview.labels.select_first"
+						@click="moveSelected(column)"
+					>
+						{{ column }} <span>{{ entriesFor(column).length }}</span>
+					</button>
+				</h2>
 				<div class="column-scroll">
 					<article
 						v-for="entry in entriesFor(column)"
 						:key="entry.task.id"
 						class="overview-task"
+						:class="{'is-selected': selectedTask === entry.task.id}"
 						:data-task-id="entry.task.id"
+						draggable="true"
+						@dragstart="startDrag($event, entry)"
+						@dragend="dragged = null"
 					>
 						<div class="task-controls">
+							<span class="task-project">{{ entry.project.title }}</span>
+							<time :title="entry.activity.evidence">{{ entry.activity.display }}</time>
 							<button
-								draggable="true"
-								class="drag-handle"
-								:aria-label="overview.labels.drag"
-								:title="overview.labels.drag"
-								@dragstart="startDrag($event, entry)"
-								@dragend="dragged = null"
+								:aria-label="overview.labels.choose_task + ': ' + entry.task.title"
+								:aria-pressed="selectedTask === entry.task.id"
+								@click="selectedTask = selectedTask === entry.task.id ? null : entry.task.id"
 							>
-								⠿
+								{{ overview.labels.move }}
 							</button>
-							<span :title="entry.activity.evidence">{{ entry.activity.display }}</span>
-							<select
-								:value="entry.task.bucket_id"
-								:aria-label="overview.labels.move + ': ' + entry.task.title"
-								:aria-disabled="move.isPending.value"
-								@change="changeStatus($event, entry)"
-							>
-								<option
-									v-for="bucket in entry.buckets"
-									:key="bucket.id"
-									:value="bucket.id"
-								>
-									{{ bucket.title }}
-								</option>
-							</select>
 						</div>
-						<KanbanCard
-							:task="entry.task"
-							:project-id="0"
+						<h3>
+							<RouterLink
+								:to="{name: 'task.detail', params: {id: entry.task.id}}"
+								@click.exact.prevent="openTask(entry.task.id)"
+							>
+								{{ entry.record?.headline ?? entry.task.title }}
+							</RouterLink>
+						</h3>
+						<OverviewTaskRecord
+							v-if="entry.record"
+							:record="entry.record"
+							:labels="overview.labels"
 						/>
 					</article>
 					<p v-if="!entriesFor(column).length">
@@ -161,14 +154,15 @@
 </template>
 
 <script setup lang="ts">
-import {computed, ref} from 'vue'
+import {computed, ref, watch} from 'vue'
 import {useMutation, useQueries} from '@tanstack/vue-query'
 import {allTasksQuery, type TaskResponse} from '@/client/queries/tasks'
 import {useProjects} from '@/composables/useProjects'
 import {bucketsQuery} from '@/client/queries/kanban'
 import {moveTaskMutationOptions} from '@/client/queries/taskMutations'
 import type {Bucket} from '@/client/generated'
-import KanbanCard from '@/components/tasks/partials/KanbanCard.vue'
+import {useRouter} from 'vue-router'
+import OverviewTaskRecord from './OverviewTaskRecord.vue'
 import OverviewArtifacts from './OverviewArtifacts.vue'
 import {
 	overviewUrl,
@@ -180,6 +174,10 @@ import {
 
 const props = defineProps<{overview: WorkspaceOverview}>()
 const display = ref<'board' | 'projects'>('board')
+const orientation = ref<'vertical' | 'horizontal'>('vertical')
+watch(() => props.overview.default_orientation, value => {orientation.value = value ?? 'vertical'}, {immediate: true})
+const selectedTask = ref<number | null>(null)
+const router = useRouter()
 const projectFilter = ref(0)
 const search = ref('')
 const move = useMutation(moveTaskMutationOptions())
@@ -219,7 +217,7 @@ const bucketQueries = useQueries({
 })
 const isLoading = computed(() => projectList.isLoading || [...taskQueries.value, ...bucketQueries.value].some(query => query.isPending))
 const hasError = computed(() => [...taskQueries.value, ...bucketQueries.value].some(query => query.isError))
-const checkedAt = computed(() => new Date(props.overview.checked_at).toLocaleString())
+
 
 type Entry = {
 	task: TaskResponse,
@@ -327,12 +325,23 @@ async function drop(status: string) {
 	if (typeof bucket?.id === 'number') await moveEntry(entry, bucket.id)
 }
 
-async function changeStatus(event: Event, entry: Entry) {
-	const select = event.target as HTMLSelectElement
-	const bucket = Number(select.value)
-	select.value = String(entry.task.bucket_id)
-	await moveEntry(entry, bucket)
+function openTask(id: number) {
+	router.push({
+		name: 'task.detail',
+		params: {id},
+		state: {backdropView: '/'},
+	})
 }
+
+async function moveSelected(status: string) {
+	const id = selectedTask.value
+	const entry = entries.value.find(entry => entry.task.id === id)
+	const bucket = entry?.buckets.find(bucket => bucket.title === status)
+	if (!entry || typeof bucket?.id !== 'number') return
+	await moveEntry(entry, bucket.id)
+	if (selectedTask.value === id) selectedTask.value = null
+}
+
 </script>
 
 <style scoped lang="scss">
@@ -403,7 +412,7 @@ async function changeStatus(event: Event, entry: Entry) {
 }
 .column-scroll {
 	padding: .4rem;
-	max-block-size: calc(100vh - 15rem);
+	max-block-size: calc(100vh - 8rem);
 	overflow-y: auto;
 	overscroll-behavior: contain;
 }
@@ -412,12 +421,38 @@ async function changeStatus(event: Event, entry: Entry) {
 	border: 1px solid var(--grey-300);
 	border-radius: .25rem;
 	background: var(--white);
-	:deep(.task) {
-		box-shadow: none;
+	container-type: inline-size;
+	padding: .6rem .8rem;
+	cursor: grab;
+	h3 {
+		font-size: 1rem;
+		line-height: 1.45;
+		margin: .25rem 0;
 	}
-	:deep(h3) {
-		font-size: .85rem;
-		line-height: 1.4;
+	&.is-selected {
+		outline: 2px solid var(--primary);
+	}
+}
+.status-target {
+	border: 0;
+	padding: 0;
+	background: transparent;
+	font: inherit;
+	color: inherit;
+	cursor: pointer;
+}
+.overview-board.is-vertical {
+	grid-template-columns: 1fr;
+	.overview-column {
+		display: grid;
+		grid-template-columns: 105px minmax(0, 1fr);
+		> h2 {
+			border-block-end: 0;
+			border-inline-end: 2px solid var(--primary);
+		}
+	}
+	.column-scroll {
+		max-block-size: none;
 	}
 }
 .task-controls {
@@ -428,8 +463,14 @@ async function changeStatus(event: Event, entry: Entry) {
 	border-block-end: 1px solid var(--grey-200);
 	font-size: .65rem;
 	color: var(--grey-700);
-	span {
-		flex: 1;
+	time {
+		margin-inline-start: auto;
+	}
+	button {
+		border: 0;
+		background: transparent;
+		color: var(--grey-700);
+		font: inherit;
 	}
 	select {
 		font-size: .68rem;
