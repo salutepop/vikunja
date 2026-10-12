@@ -8,7 +8,7 @@
 
 body.personal-workspace {
 	--workspace-ink: #223047;
-	--workspace-muted: #738096;
+	--workspace-muted: #65748a;
 	--workspace-border: #e5e9f0;
 	--workspace-accent: #5265cc;
 	--workspace-surface: #ffffff;
@@ -53,6 +53,29 @@ body.personal-workspace {
 			background: #f8faff;
 			border: 1px solid var(--workspace-border);
 			border-radius: 10px;
+		}
+	}
+
+	.modal-dialog {
+		background: rgb(27 42 66 / 35%);
+		.modal-content, .task-view {
+			border-radius: 14px;
+			background: #fff;
+		}
+		.modal-container > .close {
+			inline-size: 32px;
+			block-size: 32px;
+			border-radius: 9px;
+			background: #f2f5fb;
+			border: 1px solid #dce3ef;
+			color: #526179;
+			display: grid;
+			place-items: center;
+			font-size: 1rem;
+		}
+		.workspace-dialog-close {
+			inline-size: 18px;
+			block-size: 18px;
 		}
 	}
 }

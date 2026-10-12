@@ -39,7 +39,24 @@
 						class="close d-print-none"
 						@click="$emit('close')"
 					>
-						<Icon icon="times" />
+						<svg
+							v-if="personalWorkspace"
+							class="workspace-dialog-close"
+							viewBox="0 0 24 24"
+							aria-hidden="true"
+						>
+							<path
+								d="M6 6l12 12M18 6L6 18"
+								fill="none"
+								stroke="currentColor"
+								stroke-width="1.6"
+								stroke-linecap="round"
+							/>
+						</svg>
+						<Icon
+							v-else
+							icon="times"
+						/>
 					</BaseButton>
 					<div
 						class="modal-content"
@@ -107,6 +124,8 @@ const props = withDefaults(defineProps<{
 })
 
 defineEmits(['close', 'submit'])
+
+const personalWorkspace = Boolean(window.EXTERNAL_WORKSPACE_OVERVIEW?.personal_mode)
 
 defineOptions({
 	inheritAttrs: false,

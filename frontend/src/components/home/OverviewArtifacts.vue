@@ -96,7 +96,7 @@ defineProps<{
 	font-weight: 400;
 	line-height: 1.45;
 	font-variant-numeric: tabular-nums;
-	color: #8693a7;
+	color: #65748a;
 }
 @container (min-width: 550px) {
 	.overview-artifacts {

@@ -25,7 +25,7 @@
 				ref="heading"
 				:task="task"
 				:can-write="canWrite"
-				:has-close="isModal"
+				:has-close="isModal && !personalMode"
 				@close="$emit('close')"
 			/>
 			<nav

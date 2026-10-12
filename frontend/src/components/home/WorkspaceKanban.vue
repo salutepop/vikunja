@@ -553,7 +553,7 @@ async function moveSelected(status: string) {
 	align-items: center;
 	gap: .5rem;
 	font-size: .68rem;
-	color: #8090a5;
+	color: #65748a;
 	.task-project {
 		font-weight: 550;
 		color: #637690;
@@ -569,7 +569,7 @@ async function moveSelected(status: string) {
 		border: 0;
 		background: transparent;
 		font: inherit;
-		color: #8090a5;
+		color: #65748a;
 		padding: .2rem .35rem;
 		border-radius: 5px;
 		cursor: pointer;
@@ -596,7 +596,7 @@ async function moveSelected(status: string) {
 }
 .empty-state {
 	font-size: .75rem;
-	color: #8a97aa;
+	color: #69798f;
 	padding: .3rem;
 	margin: 0;
 }
@@ -621,7 +621,7 @@ async function moveSelected(status: string) {
 		font-size: .7rem;
 		font-weight: 400;
 		margin-inline-start: .6rem;
-		color: #8a97aa;
+		color: #69798f;
 	}
 }
 .record-summary, .record-conditions, .record-next {
