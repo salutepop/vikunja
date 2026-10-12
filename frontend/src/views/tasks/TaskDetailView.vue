@@ -1293,6 +1293,11 @@ function setRelatedTasksActive() {
 
 <style lang="scss" scoped>
 .is-personal {
+	:deep(.comments-container .editor-toolbar),
+	:deep(.comments-container .media-left),
+	:deep(.comments-container .comment-info .image) {
+		display: none;
+	}
 	:deep(.heading .task-properties > :not(.close)),
 	:deep(.heading .task-id) {
 		display: none;
