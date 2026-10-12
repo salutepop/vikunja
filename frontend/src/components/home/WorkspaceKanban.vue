@@ -13,7 +13,7 @@
 						rx="9"
 						fill="currentColor"
 					/>
-					<path d="M9 9h8a4 4 0 0 1 0 8H9zm0 8h9a3 3 0 0 1 0 6H9V9" />
+					<path :d="overview.brand?.symbol_path ?? 'M9 9h8a4 4 0 0 1 0 8H9zm0 8h9a3 3 0 0 1 0 6H9V9'" />
 				</svg>
 				<div>
 					<h1>{{ overview.brand?.name ?? overview.title }}</h1>

@@ -50,6 +50,7 @@ export type OverviewProject = {
 export type WorkspaceOverview = {
 	brand?: {
 		name: string,
+		symbol_path?: string,
 		subtitle?: string,
 		source_url?: string,
 		source_label?: string,
